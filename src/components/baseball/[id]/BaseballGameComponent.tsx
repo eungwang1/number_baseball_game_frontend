@@ -117,7 +117,7 @@ const BaseBallComponent: React.FC<BaseBallComponentProps> = () => {
     BaseballGuessResultResponse[]
   >([]);
 
-  const socket = useSocket(`${process.env.NEXT_PBULIC_API_URL}/baseball/${id}`);
+  const socket = useSocket(`${process.env.NEXT_PUBLIC_API_URL}/baseball/${id}`);
 
   useEffect(() => {
     if (socket) {
