@@ -5,7 +5,9 @@ const useSocket = (serverUrl: string): Socket | null => {
   const [socket, setSocket] = useState<Socket | null>(null);
 
   useEffect(() => {
-    const socketIo = io(serverUrl);
+    const socketIo = io(serverUrl, {
+      transports: ["websocket"],
+    });
     setSocket(socketIo);
     return () => {
       socketIo.disconnect();
