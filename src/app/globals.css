@@ -95,3 +95,10 @@ html, body, div, span, applet, object, iframe,
     clip: rect(0, 0, 0, 0);
     white-space: nowrap;
   }
+
+  .ant-message-custom-content.ant-message-error {
+    
+      span {
+        white-space: pre-line !important;
+      }
+  }
