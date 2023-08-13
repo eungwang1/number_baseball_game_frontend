@@ -53,7 +53,8 @@ const MainComponent: React.FC<MainComponentProps> = () => {
   const [isPending, setIsPending] = useState(false);
   const [matchedData, setMatchedData] = useState<MatchedResponse | null>(null);
   const router = useRouter();
-  const socket = useSocket(process.env.NEXT_PBULIC_API_URL as string);
+  const socket = useSocket(process.env.NEXT_PUBLIC_API_URL as string);
+  console.log(process.env.NEXT_PUBLIC_API_URL);
   useEffect(() => {
     if (socket) {
       socket.on(BASEBALL_SUBSCRIBE_EVENTS.MATCHED, (data: MatchedResponse) => {
