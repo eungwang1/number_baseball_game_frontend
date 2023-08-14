@@ -13,15 +13,53 @@ import {
   BASEBALL_SUBSCRIBE_EVENTS,
   TURN_TIME_LIMIT_OPTIONS,
 } from "./main.constants";
+import Link from "next/link";
+import Image from "next/image";
 
 const MainComponentBlock = styled.div`
   height: 100%;
   display: flex;
   flex-direction: column;
   justify-content: center;
-  .main-random-matching-button {
+  .main-glove-image-wrapper {
+    margin: 0 auto;
+    margin-bottom: 30px;
+    max-width: 300px;
+    width: 80%;
+    aspect-ratio: 1;
+    position: relative;
+    img {
+      opacity: 0.15;
+    }
+    p {
+      position: absolute;
+      top: 70%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      font-size: 36px;
+      text-align: center;
+      font-weight: 900;
+      font-style: italic;
+      color: ${colors.blue[700]};
+    }
+  }
+  .main-random-matching-button,
+  .main-waiting-room-move-button {
     width: 100%;
-    height: 60px;
+    height: 60px !important;
+  }
+  .main-waiting-room-move-button {
+    margin-top: 10px;
+  }
+  .main-code-button {
+    width: 100%;
+    height: 60px !important;
+  }
+  .main-code-button-wrapper {
+    display: flex;
+    margin-top: 10px;
+    width: 100%;
+    gap: 10px;
   }
   .main-turn-time-limit-label {
     font-size: 16px;
@@ -39,17 +77,17 @@ const MainComponentBlock = styled.div`
 `;
 
 const MatchingModal = styled(Modal)`
-  .main-random-matching-dialog-inner {
+  .main-random-matching-modal-inner {
     display: flex;
     flex-direction: column;
     gap: 15px;
     align-items: center;
     justify-content: center;
     padding: 20px;
-    color: ${colors.grey[100]};
+    color: ${colors.grey[800]};
   }
   .ant-modal-content {
-    background-color: unset !important;
+    /* background-color: unset !important; */
     box-shadow: unset !important;
   }
   .ant-modal-close {
@@ -141,6 +179,10 @@ const MainComponent: React.FC<MainComponentProps> = () => {
   return (
     <MainComponentBlock>
       <div className="main-body-wrapper">
+        <div className="main-glove-image-wrapper">
+          <Image src="/main/glove.png" fill alt="glove-image" />
+          <p>{"숫자야구\n온라인"}</p>
+        </div>
         <div className="main-turn-time-limit-label">한 턴당 제한시간</div>
         <Radio.Group
           className="main-turn-time-limit-radio-group"
@@ -159,6 +201,22 @@ const MainComponent: React.FC<MainComponentProps> = () => {
         >
           랜덤매칭
         </Button>
+        <div className="main-code-button-wrapper">
+          <Button
+            onClick={handleRandomMatch}
+            className="main-code-button"
+            size="large"
+          >
+            코드 입장
+          </Button>
+          <Button
+            onClick={handleRandomMatch}
+            className="main-code-button"
+            size="large"
+          >
+            코드 생성
+          </Button>
+        </div>
       </div>
       <MatchingModal
         open={isMatching}
@@ -166,8 +224,8 @@ const MainComponent: React.FC<MainComponentProps> = () => {
         closeIcon={null}
         footer={false}
       >
-        <div className="main-random-matching-dialog-inner">
-          <PacmanLoader color={colors.grey[100]} />
+        <div className="main-random-matching-modal-inner">
+          <PacmanLoader color={colors.blue[600]} />
           <p>상대를 찾고있습니다.</p>
           <Button onClick={handleCancelMatching}>매칭 취소하기</Button>
         </div>

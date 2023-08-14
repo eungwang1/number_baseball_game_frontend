@@ -5,7 +5,7 @@ import styled from "styled-components";
 
 const AppLayoutBlock = styled.div`
   min-height: 100vh;
-  max-width: 1280px;
+  max-width: 780px;
   margin: 0 auto;
   padding: 0 16px;
   .app-layout-bottom-navigation {
