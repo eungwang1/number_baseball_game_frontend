@@ -40,9 +40,11 @@ const MainComponentBlock = styled.div`
       top: 70%;
       left: 50%;
       transform: translate(-50%, -50%);
-      font-size: 36px;
+      font-size: 46px;
       text-align: center;
       font-weight: 900;
+      width: 100%;
+      white-space: pre-line;
       font-style: italic;
       color: ${colors.blue[700]};
     }
@@ -344,6 +346,7 @@ const MainComponent: React.FC<MainComponentProps> = () => {
             size="large"
             loading={isSecretMatching}
             onClick={handleJoinSecretMatch}
+            disabled={secretCodeInput.length !== 4}
           >
             입장하기
           </Button>

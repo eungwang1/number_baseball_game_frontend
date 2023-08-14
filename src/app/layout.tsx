@@ -6,7 +6,7 @@ import StyledComponentsRegistry from "@/libs/registry";
 
 const roboto = Roboto({
   subsets: ["latin"],
-  weight: ["400", "500", "700"],
+  weight: ["400", "500", "700", "900"],
 });
 
 export const metadata: Metadata = {

@@ -66,7 +66,9 @@ const BaseBallComponentBlock = styled.div<BaseBallComponentBlockProps>`
     flex-direction: column;
     align-items: center;
     justify-content: center;
-    width: calc(100% - 32px);
+    text-align: center;
+    transform: translateX(-50%);
+    left: 50%;
     gap: 5px;
     bottom: 20px;
     z-index: 9999;
@@ -176,11 +178,11 @@ const BaseBallComponent: React.FC<BaseBallComponentProps> = ({
         BASEBALL_GAME_SUBSCRIBE_EVENTS.ERROR,
         (data: BaseballErrorResponse) => {
           message.error(data.message);
-          // if (data.redirectPath) {
-          //   setTimeout(() => {
-          //     if (data.redirectPath) router.push(data.redirectPath);
-          //   }, 1500);
-          // }
+          if (data.redirectPath) {
+            setTimeout(() => {
+              if (data.redirectPath) router.push(data.redirectPath);
+            }, 1500);
+          }
         }
       );
 
