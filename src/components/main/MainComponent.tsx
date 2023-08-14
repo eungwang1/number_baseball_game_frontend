@@ -10,15 +10,16 @@ import {
   MatchedResponse,
   SecretMatchCreatedResponse,
 } from "./main.type";
-import { PacmanLoader } from "react-spinners";
-import { Button, Input, Modal, Radio, message } from "antd";
+import { Button, Modal, Radio, message } from "antd";
 import {
   BASEBALL_EMIT_EVENTS,
   BASEBALL_SUBSCRIBE_EVENTS,
   TURN_TIME_LIMIT_OPTIONS,
 } from "./main.constants";
-import Link from "next/link";
 import Image from "next/image";
+import CreateSecretMatchModal from "./CreateSecretMatchModal";
+import JoinSecretMatchModal from "./JoinSecretMatchModal";
+import RandomMatchModal from "./RandomMatchModal";
 
 const MainComponentBlock = styled.div`
   height: 100%;
@@ -79,55 +80,6 @@ const MainComponentBlock = styled.div`
   }
   .main-body-wrapper {
     display: block;
-  }
-`;
-
-const CreateSecretMatchModal = styled(Modal)`
-  .main-create-secret-match-modal-inner {
-    display: flex;
-    flex-direction: column;
-    gap: 15px;
-    align-items: center;
-    justify-content: center;
-    padding: 20px;
-    color: ${colors.grey[800]};
-  }
-  .main-create-secret-match-modal-description {
-    font-size: 14px;
-    color: ${colors.grey[700]};
-  }
-  .main-create-secret-match-modal-code {
-    font-size: 24px;
-    font-weight: 900;
-    color: ${colors.blue[700]};
-    letter-spacing: 0.3em;
-  }
-`;
-
-const JoinSecretMatchModal = styled(Modal)`
-  .main-join-secret-match-modal-inner {
-    display: flex;
-    flex-direction: column;
-    gap: 10px;
-  }
-`;
-
-const MatchingModal = styled(Modal)`
-  .main-random-matching-modal-inner {
-    display: flex;
-    flex-direction: column;
-    gap: 15px;
-    align-items: center;
-    justify-content: center;
-    padding: 20px;
-    color: ${colors.grey[800]};
-  }
-  .ant-modal-content {
-    /* background-color: unset !important; */
-    box-shadow: unset !important;
-  }
-  .ant-modal-close {
-    display: none;
   }
 `;
 
@@ -301,57 +253,23 @@ const MainComponent: React.FC<MainComponentProps> = () => {
           </Button>
         </div>
       </div>
-      <MatchingModal
+      <RandomMatchModal
         open={isMatching}
-        cancelText={null}
-        closeIcon={null}
-        footer={false}
-      >
-        <div className="main-random-matching-modal-inner">
-          <PacmanLoader color={colors.blue[600]} />
-          <p>상대를 찾고있습니다.</p>
-          <Button onClick={handleCancelMatching}>매칭 취소하기</Button>
-        </div>
-      </MatchingModal>
+        handleCancelMatching={handleCancelMatching}
+      />
       <CreateSecretMatchModal
         open={isCreateSecretMatchModalOpen}
-        cancelText={null}
-        closeIcon={null}
-        footer={false}
-      >
-        <div className="main-create-secret-match-modal-inner">
-          <p className="main-create-secret-match-modal-description">
-            입장을 기다리는 중입니다.
-          </p>
-          <p className="main-create-secret-match-modal-code">{secretCode}</p>
-          <PacmanLoader color={colors.blue[600]} />
-          <Button onClick={handleCancelSecretMatching}>매칭 취소하기</Button>
-        </div>
-      </CreateSecretMatchModal>
+        hadleCancelSecretMatching={handleCancelSecretMatching}
+        secretCode={secretCode}
+      />
       <JoinSecretMatchModal
-        cancelText={null}
-        closeIcon={null}
-        footer={false}
+        secretCodeInput={secretCodeInput}
+        setSecretCodeInput={setSecretCodeInput}
+        handleJoinSecretMatch={handleJoinSecretMatch}
+        isSecretMatching={isSecretMatching}
+        onCancel={() => setIsJoinSecretMatchModalOpen(false)}
         open={isJoinSecretMatchModalOpen}
-      >
-        <div className="main-join-secret-match-modal-inner">
-          <Input
-            size="large"
-            placeholder="코드를 입력해주세요"
-            onChange={(e) => setSecretCodeInput(e.target.value)}
-          />
-          <Button
-            className="main-join-secret-match-modal-button"
-            type="primary"
-            size="large"
-            loading={isSecretMatching}
-            onClick={handleJoinSecretMatch}
-            disabled={secretCodeInput.length !== 4}
-          >
-            입장하기
-          </Button>
-        </div>
-      </JoinSecretMatchModal>
+      />
       <Modal
         open={isMatched}
         cancelText={"취소"}
