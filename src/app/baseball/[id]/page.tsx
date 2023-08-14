@@ -1,5 +1,12 @@
 import BaseBallComponent from "@/components/baseball/[id]/BaseballGameComponent";
 
-export default function Baseball() {
-  return <BaseBallComponent />;
+interface BaseballPageProps {
+  searchParams: {
+    turnTimeLimit: string;
+  };
+}
+
+export default function BaseballPage({ searchParams }: BaseballPageProps) {
+  const turnTimeLimit = Number(searchParams.turnTimeLimit);
+  return <BaseBallComponent turnTimeLimit={turnTimeLimit} />;
 }

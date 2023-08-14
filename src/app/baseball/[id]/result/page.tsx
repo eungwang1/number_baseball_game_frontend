@@ -14,7 +14,6 @@ export default async function BaseballResultPage({
   searchParams,
   params,
 }: BaseballResultPageProps) {
-  console.log(searchParams.result);
   const baseballGame = await findBaseballGameById(params.id);
   let userNumber: 1 | 2 = 1;
   if (searchParams.result === "win") {

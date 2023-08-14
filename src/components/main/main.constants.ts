@@ -11,3 +11,22 @@ export const BASEBALL_SUBSCRIBE_EVENTS = {
   NO_USERS_AVAILABLE: "noUsersAvailable",
   ERROR: "error",
 };
+
+export const TURN_TIME_LIMIT_OPTIONS = [
+  {
+    value: 30,
+    label: "30초",
+  },
+  {
+    value: 60,
+    label: "1분",
+  },
+  {
+    value: 120,
+    label: "2분",
+  },
+  {
+    value: 0,
+    label: "랜덤",
+  },
+];

@@ -7,22 +7,34 @@ import React, { useEffect, useState } from "react";
 import styled from "styled-components";
 import { MatchedResponse } from "./main.type";
 import { PacmanLoader } from "react-spinners";
-import { Button, Card, Modal, message } from "antd";
+import { Button, Modal, Radio, message } from "antd";
 import {
   BASEBALL_EMIT_EVENTS,
   BASEBALL_SUBSCRIBE_EVENTS,
+  TURN_TIME_LIMIT_OPTIONS,
 } from "./main.constants";
 
 const MainComponentBlock = styled.div`
   height: 100%;
   display: flex;
   flex-direction: column;
+  justify-content: center;
   .main-random-matching-button {
     width: 100%;
+    height: 60px;
   }
-  .main-button-wrapper {
+  .main-turn-time-limit-label {
+    font-size: 16px;
+    color: ${colors.grey[700]};
+  }
+  .main-turn-time-limit-radio-group {
+    margin-bottom: 10px;
+    label {
+      vertical-align: middle;
+    }
+  }
+  .main-body-wrapper {
     display: block;
-    margin-top: auto;
   }
 `;
 
@@ -52,6 +64,7 @@ const MainComponent: React.FC<MainComponentProps> = () => {
   const [isMatched, setIsMatched] = useState(false);
   const [isPending, setIsPending] = useState(false);
   const [matchedData, setMatchedData] = useState<MatchedResponse | null>(null);
+  const [turnTimeLimit, setTurnTimeLimit] = useState(30);
   const router = useRouter();
   const socket = useSocket(process.env.NEXT_PUBLIC_API_URL as string);
   useEffect(() => {
@@ -62,10 +75,11 @@ const MainComponent: React.FC<MainComponentProps> = () => {
         setMatchedData(data);
       });
       socket.on(BASEBALL_SUBSCRIBE_EVENTS.MATCH_APPROVED, (data) => {
-        router.push(`/baseball/${data.roomId}`);
+        router.push(
+          `/baseball/${data.roomId}?turnTimeLimit=${data.turnTimeLimit}`
+        );
       });
       socket.on(BASEBALL_SUBSCRIBE_EVENTS.MATCH_CANCELED, () => {
-        console.log("match canceled");
         setIsMatched(false);
         setIsPending(false);
         message.info("상대가 매칭을 취소하였습니다.");
@@ -83,7 +97,9 @@ const MainComponent: React.FC<MainComponentProps> = () => {
   const handleRandomMatch = () => {
     try {
       if (!socket?.connected) return message.error("연결에 실패했습니다.");
-      socket.emit(BASEBALL_EMIT_EVENTS.REQUEST_RANDOM_MATCH);
+      socket.emit(BASEBALL_EMIT_EVENTS.REQUEST_RANDOM_MATCH, {
+        turnTimeLimit,
+      });
       setIsMatching(true);
     } catch (e) {
       console.log(e);
@@ -124,7 +140,17 @@ const MainComponent: React.FC<MainComponentProps> = () => {
   };
   return (
     <MainComponentBlock>
-      <div className="main-button-wrapper">
+      <div className="main-body-wrapper">
+        <div className="main-turn-time-limit-label">한 턴당 제한시간</div>
+        <Radio.Group
+          className="main-turn-time-limit-radio-group"
+          options={TURN_TIME_LIMIT_OPTIONS}
+          onChange={(e) => {
+            setTurnTimeLimit(e.target.value);
+          }}
+          value={turnTimeLimit}
+          optionType="button"
+        />
         <Button
           onClick={handleRandomMatch}
           className="main-random-matching-button"
