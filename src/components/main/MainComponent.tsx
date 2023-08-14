@@ -163,6 +163,7 @@ const MainComponent: React.FC<MainComponentProps> = () => {
       });
       socket.on(BASEBALL_SUBSCRIBE_EVENTS.ERROR, (data: ErrorResponse) => {
         message.error(data.message);
+        setIsSecretMatching(false);
       });
       socket.on(
         BASEBALL_SUBSCRIBE_EVENTS.SECRET_MATCH_CREATED,
@@ -250,8 +251,10 @@ const MainComponent: React.FC<MainComponentProps> = () => {
       socket.emit(BASEBALL_EMIT_EVENTS.JOIN_SECRET_MATCH, {
         secretCode: Number(secretCodeInput),
       });
+      setIsSecretMatching(true);
     } catch (e) {
       console.log(e);
+      setIsSecretMatching(false);
     }
   };
   return (
@@ -339,6 +342,7 @@ const MainComponent: React.FC<MainComponentProps> = () => {
             className="main-join-secret-match-modal-button"
             type="primary"
             size="large"
+            loading={isSecretMatching}
             onClick={handleJoinSecretMatch}
           >
             입장하기
