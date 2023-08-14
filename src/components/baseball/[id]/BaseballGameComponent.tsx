@@ -163,6 +163,22 @@ const BaseBallComponent: React.FC<BaseBallComponentProps> = () => {
     };
   }, [socket]);
 
+  useEffect(() => {
+    const handleKeydown = (e: KeyboardEvent) => {
+      if (e.key === "Backspace") {
+        setNumber((prev) => prev.slice(0, prev.length - 1));
+      }
+      if (e.key === "Enter") {
+        handleRegisterNumber();
+      }
+      if (e.key >= "0" && e.key <= "9") {
+        onClickNumberButton(e.key);
+      }
+    };
+    window.addEventListener("keydown", handleKeydown);
+    return () => window.removeEventListener("keydown", handleKeydown);
+  }, [number]);
+
   const onClickNumberButton = (value: string) => {
     if (number.length >= 4)
       return message.error("숫자는 4자리까지만 입력할 수 있습니다.");

@@ -62,9 +62,7 @@ const MainComponent: React.FC<MainComponentProps> = () => {
         setMatchedData(data);
       });
       socket.on(BASEBALL_SUBSCRIBE_EVENTS.MATCH_APPROVED, (data) => {
-        setTimeout(() => {
-          router.push(`/baseball/${data.roomId}`);
-        }, 1000);
+        router.push(`/baseball/${data.roomId}`);
       });
       socket.on(BASEBALL_SUBSCRIBE_EVENTS.MATCH_CANCELED, () => {
         console.log("match canceled");
