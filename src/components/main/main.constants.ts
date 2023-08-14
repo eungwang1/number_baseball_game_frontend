@@ -2,12 +2,15 @@ export const BASEBALL_EMIT_EVENTS = {
   REQUEST_RANDOM_MATCH: "requestRandomMatch",
   CANCEL_RANDOM_MATCH: "cancelRandomMatch",
   APPROVE_RANDOM_MATCH: "approveRandomMatch",
+  CREATE_SECRET_MATCH: "createSecretMatch",
+  JOIN_SECRET_MATCH: "joinSecretMatch",
 };
 
 export const BASEBALL_SUBSCRIBE_EVENTS = {
   MATCHED: "matched",
   MATCH_APPROVED: "matchApproved",
   MATCH_CANCELED: "matchCancelled",
+  SECRET_MATCH_CREATED: "secretMatchCreated",
   NO_USERS_AVAILABLE: "noUsersAvailable",
   ERROR: "error",
 };

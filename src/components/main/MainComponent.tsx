@@ -5,9 +5,13 @@ import { Dialog, colors } from "@mui/material";
 import { useRouter } from "next/navigation";
 import React, { useEffect, useState } from "react";
 import styled from "styled-components";
-import { MatchedResponse } from "./main.type";
+import {
+  ErrorResponse,
+  MatchedResponse,
+  SecretMatchCreatedResponse,
+} from "./main.type";
 import { PacmanLoader } from "react-spinners";
-import { Button, Modal, Radio, message } from "antd";
+import { Button, Input, Modal, Radio, message } from "antd";
 import {
   BASEBALL_EMIT_EVENTS,
   BASEBALL_SUBSCRIBE_EVENTS,
@@ -76,6 +80,36 @@ const MainComponentBlock = styled.div`
   }
 `;
 
+const CreateSecretMatchModal = styled(Modal)`
+  .main-create-secret-match-modal-inner {
+    display: flex;
+    flex-direction: column;
+    gap: 15px;
+    align-items: center;
+    justify-content: center;
+    padding: 20px;
+    color: ${colors.grey[800]};
+  }
+  .main-create-secret-match-modal-description {
+    font-size: 14px;
+    color: ${colors.grey[700]};
+  }
+  .main-create-secret-match-modal-code {
+    font-size: 24px;
+    font-weight: 900;
+    color: ${colors.blue[700]};
+    letter-spacing: 0.3em;
+  }
+`;
+
+const JoinSecretMatchModal = styled(Modal)`
+  .main-join-secret-match-modal-inner {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+  }
+`;
+
 const MatchingModal = styled(Modal)`
   .main-random-matching-modal-inner {
     display: flex;
@@ -99,9 +133,15 @@ interface MainComponentProps {}
 
 const MainComponent: React.FC<MainComponentProps> = () => {
   const [isMatching, setIsMatching] = useState(false);
+  const [isCreateSecretMatchModalOpen, setIsCreateSecretMatchModalOpen] =
+    useState(false);
+  const [isJoinSecretMatchModalOpen, setIsJoinSecretMatchModalOpen] =
+    useState(false);
   const [isMatched, setIsMatched] = useState(false);
   const [isPending, setIsPending] = useState(false);
-  const [matchedData, setMatchedData] = useState<MatchedResponse | null>(null);
+  const [secretCodeInput, setSecretCodeInput] = useState<string>("");
+  const [secretCode, setSecretCode] = useState<number>(0);
+  const [isSecretMatching, setIsSecretMatching] = useState(false);
   const [turnTimeLimit, setTurnTimeLimit] = useState(30);
   const router = useRouter();
   const socket = useSocket(process.env.NEXT_PUBLIC_API_URL as string);
@@ -110,7 +150,6 @@ const MainComponent: React.FC<MainComponentProps> = () => {
       socket.on(BASEBALL_SUBSCRIBE_EVENTS.MATCHED, (data: MatchedResponse) => {
         setIsMatching(false);
         setIsMatched(true);
-        setMatchedData(data);
       });
       socket.on(BASEBALL_SUBSCRIBE_EVENTS.MATCH_APPROVED, (data) => {
         router.push(
@@ -122,6 +161,15 @@ const MainComponent: React.FC<MainComponentProps> = () => {
         setIsPending(false);
         message.info("상대가 매칭을 취소하였습니다.");
       });
+      socket.on(BASEBALL_SUBSCRIBE_EVENTS.ERROR, (data: ErrorResponse) => {
+        message.error(data.message);
+      });
+      socket.on(
+        BASEBALL_SUBSCRIBE_EVENTS.SECRET_MATCH_CREATED,
+        (data: SecretMatchCreatedResponse) => {
+          setSecretCode(data.secretCode);
+        }
+      );
     }
     return () => {
       if (socket) {
@@ -165,6 +213,26 @@ const MainComponent: React.FC<MainComponentProps> = () => {
     }
   };
 
+  const handleCreateSecretMatch = async () => {
+    try {
+      if (!socket?.connected) return message.error("연결에 실패했습니다.");
+      socket.emit(BASEBALL_EMIT_EVENTS.CREATE_SECRET_MATCH, {
+        turnTimeLimit,
+      });
+      setIsCreateSecretMatchModalOpen(true);
+    } catch {}
+  };
+
+  const handleCancelSecretMatching = () => {
+    try {
+      if (!socket?.connected) return message.error("연결에 실패했습니다.");
+      socket.emit(BASEBALL_EMIT_EVENTS.CANCEL_RANDOM_MATCH);
+    } catch (e) {
+      console.log(e);
+    } finally {
+      setIsCreateSecretMatchModalOpen(false);
+    }
+  };
   const handleCancleMatched = () => {
     try {
       if (!socket?.connected) return message.error("연결에 실패했습니다.");
@@ -174,6 +242,16 @@ const MainComponent: React.FC<MainComponentProps> = () => {
     } finally {
       setIsMatched(false);
       setIsPending(false);
+    }
+  };
+  const handleJoinSecretMatch = () => {
+    try {
+      if (!socket?.connected) return message.error("연결에 실패했습니다.");
+      socket.emit(BASEBALL_EMIT_EVENTS.JOIN_SECRET_MATCH, {
+        secretCode: Number(secretCodeInput),
+      });
+    } catch (e) {
+      console.log(e);
     }
   };
   return (
@@ -203,14 +281,14 @@ const MainComponent: React.FC<MainComponentProps> = () => {
         </Button>
         <div className="main-code-button-wrapper">
           <Button
-            onClick={handleRandomMatch}
+            onClick={() => setIsJoinSecretMatchModalOpen(true)}
             className="main-code-button"
             size="large"
           >
             코드 입장
           </Button>
           <Button
-            onClick={handleRandomMatch}
+            onClick={handleCreateSecretMatch}
             className="main-code-button"
             size="large"
           >
@@ -230,6 +308,43 @@ const MainComponent: React.FC<MainComponentProps> = () => {
           <Button onClick={handleCancelMatching}>매칭 취소하기</Button>
         </div>
       </MatchingModal>
+      <CreateSecretMatchModal
+        open={isCreateSecretMatchModalOpen}
+        cancelText={null}
+        closeIcon={null}
+        footer={false}
+      >
+        <div className="main-create-secret-match-modal-inner">
+          <p className="main-create-secret-match-modal-description">
+            입장을 기다리는 중입니다.
+          </p>
+          <p className="main-create-secret-match-modal-code">{secretCode}</p>
+          <PacmanLoader color={colors.blue[600]} />
+          <Button onClick={handleCancelSecretMatching}>매칭 취소하기</Button>
+        </div>
+      </CreateSecretMatchModal>
+      <JoinSecretMatchModal
+        cancelText={null}
+        closeIcon={null}
+        footer={false}
+        open={isJoinSecretMatchModalOpen}
+      >
+        <div className="main-join-secret-match-modal-inner">
+          <Input
+            size="large"
+            placeholder="코드를 입력해주세요"
+            onChange={(e) => setSecretCodeInput(e.target.value)}
+          />
+          <Button
+            className="main-join-secret-match-modal-button"
+            type="primary"
+            size="large"
+            onClick={handleJoinSecretMatch}
+          >
+            입장하기
+          </Button>
+        </div>
+      </JoinSecretMatchModal>
       <Modal
         open={isMatched}
         cancelText={"취소"}
