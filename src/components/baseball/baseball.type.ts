@@ -2,6 +2,7 @@ export interface BaseballErrorResponse {
   message: string;
   ok: boolean;
   statusCode: number;
+  redirectPath?: string;
 }
 
 export interface BaseballGameStartResponse {
@@ -20,7 +21,7 @@ export interface BaseballChangeTurnResponse {
 export interface BaseballGuessResultResponse {
   strike: number;
   ball: number;
-  baseballNumber: string;
+  baseball_number: string;
 }
 
 export interface BaseballGameResult {

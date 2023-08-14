@@ -17,48 +17,30 @@ import {
 } from "../baseball.type";
 import ArrowBackIcon from "@mui/icons-material/ArrowBack";
 import { Alert, Snackbar, colors } from "@mui/material";
-import { Input, Button, message } from "antd";
+import { Input, Button, message, Spin } from "antd";
 import NumberRegistrationModal from "./NumberRegistrationModal";
-import WaitingTurnModal from "./WaitingTurnModal";
+import BaseballGameHistory from "./BaseballGameHistory";
 
 const BaseBallComponentBlock = styled.div`
   padding: 30px 0;
   position: relative;
   height: 100vh;
-  .baseball-number-record-box {
+  .baseball-game-history-wrapper {
     margin-top: 20px;
-    border-radius: 10px;
-    border: 1px solid ${colors.grey[300]};
   }
-  .baseball-number-record-header {
+
+  .baseball-waiting-turn-indicator {
+    padding: 7px 11px;
+    font-size: 16px;
+    line-height: 1.5;
+    border: 1px solid ${colors.grey[300]};
+    border-radius: 8px;
     display: flex;
     align-items: center;
-    justify-content: center;
-    padding: 10px 0;
-    border-radius: 10px 10px 0 0;
-    background-color: ${colors.grey[50]};
-    div {
-      width: 100%;
-      color: ${colors.grey[600]};
-      text-align: center;
-    }
-    div:nth-child(1) {
-      border-right: 1px solid ${colors.grey[300]};
-    }
-  }
-  .baseball-number-record-list {
-    display: flex;
-    height: 200px;
-    overflow-y: auto;
-    div {
-      width: 100%;
-      text-align: center;
-    }
-  }
-  .baseball-number-record-list-item {
-    padding: 10px 0;
-
-    border-bottom: 1px solid ${colors.grey[200]};
+    gap: 15px;
+    font-size: 15px;
+    color: ${colors.grey[500]};
+    font-weight: bold;
   }
   .number-button-box {
     position: fixed;
@@ -106,9 +88,6 @@ const BaseBallComponent: React.FC<BaseBallComponentProps> = () => {
   const [isConnected, setIsConnected] = useState<boolean>(false);
   const [isGameStart, setIsGameStart] = useState<boolean>(false);
   const [isMyTurn, setIsMyTurn] = useState<boolean>(true);
-  const [isGameEnd, setIsGameEnd] = useState<boolean>(false);
-  const [isWin, setIsWin] = useState<boolean>(false);
-  const [errorMessage, setErrorMessage] = useState<string>("");
 
   const [myGuessResults, setMyGuessResults] = useState<
     BaseballGuessResultResponse[]
@@ -128,11 +107,11 @@ const BaseBallComponent: React.FC<BaseBallComponentProps> = () => {
         BASEBALL_GAME_SUBSCRIBE_EVENTS.ERROR,
         (data: BaseballErrorResponse) => {
           message.error(data.message);
-          // if (data.statusCode > 400) {
-          //   setTimeout(() => {
-          //     router.push("/");
-          //   }, 2000);
-          // }
+          if (data.redirectPath) {
+            setTimeout(() => {
+              if (data.redirectPath) router.push(data.redirectPath);
+            }, 1500);
+          }
         }
       );
 
@@ -146,9 +125,9 @@ const BaseBallComponent: React.FC<BaseBallComponentProps> = () => {
         BASEBALL_GAME_SUBSCRIBE_EVENTS.GAME_END,
         (data: BaseballGameEndResponse) => {
           if (data.isWin) {
-            return router.push(`/baseball/${id}/win`);
+            return router.push(`/baseball/${id}/result?result=win`);
           }
-          return router.push(`/baseball/${id}/lose`);
+          return router.push(`/baseball/${id}/result?result=lose`);
         }
       );
 
@@ -209,47 +188,47 @@ const BaseBallComponent: React.FC<BaseBallComponentProps> = () => {
       });
     } else {
       // 게임 시작 후, 볼넘버 추측
+      if (!isMyTurn) return message.error("상대방의 차례입니다.");
       socket.emit(BASEBALL_GAME_EMIT_EVENTS.GUESS_BALL_NUMBER, {
         baseballNumber: number,
       });
     }
     setNumber("");
   };
+
   if (!isConnected) return <div>로딩중...</div>;
   return (
     <BaseBallComponentBlock>
-      <Input
-        value={isGameStart ? number : ""}
-        placeholder="4자리 숫자를 입력해주세요."
-        inputMode="none"
-        size="large"
-      />
-      <div className="baseball-number-record-box">
-        <div className="baseball-number-record-header">
-          <div>내기록</div>
-          <div>상대기록</div>
-        </div>
-        <div className="baseball-number-record-list">
+      {isMyTurn ? (
+        <Input
+          value={isGameStart ? number : ""}
+          placeholder="4자리 숫자를 입력해주세요."
+          inputMode="none"
+          size="large"
+          readOnly
+        />
+      ) : (
+        <div className="baseball-waiting-turn-indicator">
           <div>
-            {myGuessResults.map((result, index) => (
-              <div className="baseball-number-record-list-item" key={index}>
-                {result.baseballNumber} : {result.strike}S {result.ball}B
-              </div>
-            ))}
+            <Spin />
           </div>
-          <div>
-            {opponentGuessResults.map((result, index) => (
-              <div className="baseball-number-record-list-item" key={index}>
-                {result.baseballNumber} : {result.strike}S {result.ball}B
-              </div>
-            ))}
-          </div>
+          <div>상대방의 차례입니다.</div>
         </div>
+      )}
+
+      <div className="baseball-game-history-wrapper">
+        <BaseballGameHistory
+          gameHistory={{
+            me: myGuessResults,
+            opponent: opponentGuessResults,
+          }}
+        />
       </div>
       <div className="number-button-box">
         <Button
           className="number-backspace-button"
           size="large"
+          disabled={!isMyTurn}
           onClick={handleRemoveNumber}
         >
           <ArrowBackIcon />
@@ -257,6 +236,7 @@ const BaseBallComponent: React.FC<BaseBallComponentProps> = () => {
         <Button
           className="number-register-button"
           size="large"
+          disabled={!isMyTurn}
           onClick={handleRegisterNumber}
         >
           입력하기
@@ -268,6 +248,7 @@ const BaseBallComponent: React.FC<BaseBallComponentProps> = () => {
                 size="large"
                 type="primary"
                 key={number}
+                disabled={!isMyTurn}
                 onClick={() => onClickNumberButton(number)}
               >
                 {number}
@@ -282,6 +263,7 @@ const BaseBallComponent: React.FC<BaseBallComponentProps> = () => {
                 size="large"
                 type="primary"
                 key={number}
+                disabled={!isMyTurn}
                 onClick={() => onClickNumberButton(number)}
               >
                 {number}
@@ -291,7 +273,6 @@ const BaseBallComponent: React.FC<BaseBallComponentProps> = () => {
         </div>
       </div>
 
-      <WaitingTurnModal open={!isMyTurn} footer={null} closeIcon={null} />
       <NumberRegistrationModal
         open={!isGameStart}
         closeIcon={false}
@@ -300,22 +281,6 @@ const BaseBallComponent: React.FC<BaseBallComponentProps> = () => {
         number={number}
         setNumber={setNumber}
       />
-
-      {/* <Dialog open={isGameEnd}>
-        <div style={{ padding: "30px" }}>
-          <h1>게임이 종료되었습니다.</h1>
-          <div>{`${isWin ? "승리" : "패배"} 하였습니다.`}</div>
-        </div>
-      </Dialog> */}
-      <Snackbar
-        open={!!errorMessage}
-        autoHideDuration={3000}
-        onClose={() => setErrorMessage("")}
-      >
-        <Alert severity="error" onClose={() => setErrorMessage("")}>
-          {errorMessage}
-        </Alert>
-      </Snackbar>
     </BaseBallComponentBlock>
   );
 };

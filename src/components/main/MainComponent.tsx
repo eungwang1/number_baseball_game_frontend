@@ -64,11 +64,12 @@ const MainComponent: React.FC<MainComponentProps> = () => {
       socket.on(BASEBALL_SUBSCRIBE_EVENTS.MATCH_APPROVED, (data) => {
         setTimeout(() => {
           router.push(`/baseball/${data.roomId}`);
-        }, 2000);
+        }, 1000);
       });
       socket.on(BASEBALL_SUBSCRIBE_EVENTS.MATCH_CANCELED, () => {
         console.log("match canceled");
         setIsMatched(false);
+        setIsPending(false);
         message.info("상대가 매칭을 취소하였습니다.");
       });
     }
@@ -82,28 +83,46 @@ const MainComponent: React.FC<MainComponentProps> = () => {
   }, [socket]);
 
   const handleRandomMatch = () => {
-    if (!socket) return alert("socket is not connected");
-    socket.emit(BASEBALL_EMIT_EVENTS.REQUEST_RANDOM_MATCH);
-    setIsMatching(true);
+    try {
+      if (!socket?.connected) return message.error("연결에 실패했습니다.");
+      socket.emit(BASEBALL_EMIT_EVENTS.REQUEST_RANDOM_MATCH);
+      setIsMatching(true);
+    } catch (e) {
+      console.log(e);
+    }
   };
 
   const handleApproveMatching = () => {
-    if (!socket) return alert("socket is not connected");
-    socket.emit(BASEBALL_EMIT_EVENTS.APPROVE_RANDOM_MATCH);
-    setIsPending(true);
+    try {
+      if (!socket?.connected) return message.error("연결에 실패했습니다.");
+      socket.emit(BASEBALL_EMIT_EVENTS.APPROVE_RANDOM_MATCH);
+      setIsPending(true);
+    } catch (e) {
+      console.log(e);
+    }
   };
 
   const handleCancelMatching = () => {
-    if (!socket) return alert("socket is not connected");
-    socket.emit(BASEBALL_EMIT_EVENTS.CANCEL_RANDOM_MATCH);
-    setIsMatching(false);
+    try {
+      if (!socket?.connected) return message.error("연결에 실패했습니다.");
+      socket.emit(BASEBALL_EMIT_EVENTS.CANCEL_RANDOM_MATCH);
+    } catch (e) {
+      console.log(e);
+    } finally {
+      setIsMatching(false);
+    }
   };
 
   const handleCancleMatched = () => {
-    if (!socket) return alert("socket is not connected");
-    socket.emit(BASEBALL_EMIT_EVENTS.CANCEL_RANDOM_MATCH);
-    setIsMatched(false);
-    setIsPending(false);
+    try {
+      if (!socket?.connected) return message.error("연결에 실패했습니다.");
+      socket.emit(BASEBALL_EMIT_EVENTS.CANCEL_RANDOM_MATCH);
+    } catch (e) {
+      console.log(e);
+    } finally {
+      setIsMatched(false);
+      setIsPending(false);
+    }
   };
   return (
     <MainComponentBlock>
@@ -139,10 +158,14 @@ const MainComponent: React.FC<MainComponentProps> = () => {
         onOk={handleApproveMatching}
         onCancel={handleCancleMatched}
       >
-        <div>매칭이 완료되었습니다.</div>
-        <div>상대 정보</div>
-        <div>은광</div>
-        <div>20전 10승 10패 (50%)</div>
+        <div
+          style={{
+            fontSize: 16,
+            fontWeight: 700,
+          }}
+        >
+          상대가 매칭되었습니다.
+        </div>
       </Modal>
     </MainComponentBlock>
   );
