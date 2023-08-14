@@ -79,26 +79,7 @@ html, body, div, span, applet, object, iframe,
     color: red;
     margin-left: 2px;
   }
-  button.ant-btn.ant-btn-default {
-    background-color: #141414;
-    border-color: #424242;
-    color: #FFFFFFD9;
-  }
 
-  .hidden-title {
-    overflow: hidden;
-    position: absolute;
-    width: 1px;
-    height: 1px;
-    margin: -1px;
-    background-color: transparent;
-    clip: rect(0, 0, 0, 0);
-    white-space: nowrap;
-  }
 
-  .ant-message-custom-content.ant-message-error {
-    
-      span {
-        white-space: pre-line !important;
-      }
-  }
+  
+ 
