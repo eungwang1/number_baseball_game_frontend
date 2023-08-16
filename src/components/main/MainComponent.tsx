@@ -213,6 +213,13 @@ const MainComponent: React.FC<MainComponentProps> = () => {
   };
   return (
     <MainComponentBlock>
+      <Button
+        onClick={() => {
+          window.location.href = `https://kauth.kakao.com/oauth/authorize?client_id=${process.env.NEXT_PUBLIC_KAKAO_REST_API_KEY}&redirect_uri=${process.env.NEXT_PUBLIC_KAKAO_REDIRECT_URL}&response_type=code`;
+        }}
+      >
+        로그인
+      </Button>
       <div className="main-body-wrapper">
         <div className="main-glove-image-wrapper">
           <Image src="/main/glove.png" fill alt="glove-image" />
