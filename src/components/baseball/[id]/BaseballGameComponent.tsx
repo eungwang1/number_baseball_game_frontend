@@ -126,8 +126,7 @@ const BaseBallComponent: React.FC<BaseBallComponentProps> = ({
   const socket = useSocket(`${process.env.NEXT_PUBLIC_API_URL}/baseball/${id}`);
 
   const onClickNumberButton = (value: string) => {
-    if (number.length >= 4)
-      return message.error("숫자는 4자리까지만 입력할 수 있습니다.");
+    if (number.length >= 4) return;
     const isUnique = !number.includes(value);
     if (!isUnique) return message.error("중복된 숫자는 입력할 수 없습니다.");
     setNumber((prev) => prev + value);
@@ -319,30 +318,30 @@ const BaseBallComponent: React.FC<BaseBallComponentProps> = ({
         </Button>
         <div className="number-button-wrapper">
           {Array.from({ length: 5 }, (_, index) => String(index)).map(
-            (number) => (
+            (value) => (
               <Button
                 size="large"
                 type="primary"
-                key={number}
-                disabled={!isMyTurn}
-                onClick={() => onClickNumberButton(number)}
+                key={value}
+                disabled={!isMyTurn || number.includes(value)}
+                onClick={() => onClickNumberButton(value)}
               >
-                {number}
+                {value}
               </Button>
             )
           )}
         </div>
         <div className="number-button-wrapper">
           {Array.from({ length: 5 }, (_, index) => String(index + 5)).map(
-            (number) => (
+            (value) => (
               <Button
                 size="large"
                 type="primary"
-                key={number}
-                disabled={!isMyTurn}
-                onClick={() => onClickNumberButton(number)}
+                key={value}
+                disabled={!isMyTurn || number.includes(value)}
+                onClick={() => onClickNumberButton(value)}
               >
-                {number}
+                {value}
               </Button>
             )
           )}
