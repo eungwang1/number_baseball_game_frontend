@@ -95,6 +95,7 @@ const NumberRegistrationModal: React.FC<NumberRegistrationModalProps> = (
             size="large"
             value={number}
             inputMode="none"
+            readOnly
           />
         </form>
       )}

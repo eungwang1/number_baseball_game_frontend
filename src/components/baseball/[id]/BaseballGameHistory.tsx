@@ -27,7 +27,7 @@ const BaseballGameHistoryBlock = styled.div`
   }
   .baseball-number-record-list {
     display: flex;
-    height: 200px;
+    height: 150px;
     overflow-y: auto;
     div {
       width: 100%;
@@ -37,6 +37,9 @@ const BaseballGameHistoryBlock = styled.div`
   .baseball-number-record-list-item {
     padding: 10px 0;
     border-bottom: 1px solid ${colors.grey[200]};
+  }
+  .baseball-number-record-list-item:first-child {
+    color: ${colors.blue[600]};
   }
 `;
 
