@@ -21,6 +21,7 @@ import { Input, Button, message, Spin } from "antd";
 import NumberRegistrationModal from "./NumberRegistrationModal";
 import BaseballGameHistory from "./BaseballGameHistory";
 import useTimer from "@/libs/hooks/useTimer";
+import { ClockLoader } from "react-spinners";
 
 interface BaseBallComponentBlockProps {
   currentTurnTime: number;
@@ -48,7 +49,8 @@ const BaseBallComponentBlock = styled.div<BaseBallComponentBlockProps>`
   }
 
   .baseball-waiting-turn-indicator {
-    padding: 7px 11px;
+    padding: 0px 11px;
+    box-sizing: border-box;
     font-size: 16px;
     line-height: 1.5;
     border: 1px solid ${colors.grey[300]};
@@ -59,8 +61,11 @@ const BaseBallComponentBlock = styled.div<BaseBallComponentBlockProps>`
     font-size: 14px;
     color: ${colors.grey[400]};
     font-weight: bold;
+    width: 100%;
+    height: 42px;
   }
   .number-button-box {
+    width: 270px;
     position: fixed;
     display: flex;
     flex-direction: column;
@@ -97,6 +102,41 @@ const BaseBallComponentBlock = styled.div<BaseBallComponentBlockProps>`
     margin-top: 10px;
     width: 100%;
   }
+  .number-top-button-wrapper {
+    display: flex;
+    width: 100%;
+    gap: 5px;
+  }
+  .number-display-wrapper {
+    display: flex;
+    width: 100%;
+    gap: 5px;
+    height: 42px;
+    input {
+      text-align: center;
+      color: ${colors.grey[700]};
+      font-size: 20px;
+      font-weight: bold;
+    }
+  }
+  .baseball-timer-wrapper {
+    display: flex;
+    align-items: center;
+    justify-content: flex-end;
+    width: 100%;
+    gap: 6px;
+    height: 24px;
+  }
+  .baseball-timer-value {
+    position: relative;
+    top: 1px;
+    color: ${(props) =>
+      props.currentTurnTime < 10
+        ? colors.red[500]
+        : props.isTimerActive
+        ? colors.blue[400]
+        : colors.grey[400]};
+  }
 `;
 
 interface BaseBallComponentProps {
@@ -126,8 +166,7 @@ const BaseBallComponent: React.FC<BaseBallComponentProps> = ({
   const socket = useSocket(`${process.env.NEXT_PUBLIC_API_URL}/baseball/${id}`);
 
   const onClickNumberButton = (value: string) => {
-    if (number.length >= 4)
-      return message.error("숫자는 4자리까지만 입력할 수 있습니다.");
+    if (number.length >= 4) return;
     const isUnique = !number.includes(value);
     if (!isUnique) return message.error("중복된 숫자는 입력할 수 없습니다.");
     setNumber((prev) => prev + value);
@@ -167,6 +206,11 @@ const BaseBallComponent: React.FC<BaseBallComponentProps> = ({
       numbers.splice(randomIndex, 1);
     }
     return result;
+  };
+
+  const handleSetRandomNumber = () => {
+    const generatedNumber = generateRandomBaseballNumber();
+    setNumber(generatedNumber);
   };
 
   useEffect(() => {
@@ -271,84 +315,96 @@ const BaseBallComponent: React.FC<BaseBallComponentProps> = ({
       currentTurnTime={time}
       isTimerActive={isTimerActive}
     >
-      {isMyTurn ? (
-        <Input
-          value={isGameStart ? number : ""}
-          placeholder="4자리 숫자를 입력해주세요."
-          inputMode="none"
-          size="large"
-          suffix={
-            <div className="baseball-timer-indicator">{`남은시간: ${time}`}</div>
-          }
-          readOnly
-        />
-      ) : (
-        <div className="baseball-waiting-turn-indicator">
-          <div>
-            <Spin />
-          </div>
-          <div>상대방의 차례입니다.</div>
-          <div className="baseball-timer-indicator">{`남은시간: ${time}`}</div>
-        </div>
-      )}
-
-      <div className="baseball-game-history-wrapper">
-        <BaseballGameHistory
-          gameHistory={{
-            me: myGuessResults,
-            opponent: opponentGuessResults,
-          }}
-        />
-      </div>
+      <BaseballGameHistory
+        gameHistory={{
+          me: myGuessResults,
+          opponent: opponentGuessResults,
+        }}
+      />
       <div className="number-button-box">
-        <Button
-          className="number-backspace-button"
-          size="large"
-          disabled={!isMyTurn}
-          onClick={handleRemoveNumber}
-        >
-          <ArrowBackIcon />
-        </Button>
-        <Button
-          className="number-register-button"
-          size="large"
-          disabled={!isMyTurn}
-          onClick={() => handleRegisterNumber(number)}
-        >
-          입력하기
-        </Button>
+        <div className="baseball-timer-wrapper">
+          <ClockLoader
+            loading={isTimerActive}
+            color={time < 10 ? colors.red[500] : colors.blue[400]}
+            size={20}
+          />
+          {isTimerActive && (
+            <div className="baseball-timer-value">
+              {time.toString().padStart(2, "0")}
+            </div>
+          )}
+        </div>
+        {isMyTurn ? (
+          <div className="number-display-wrapper">
+            {[0, 1, 2, 3].map((value) => (
+              <Input key={value} value={number.charAt(value) || "?"} readOnly />
+            ))}
+          </div>
+        ) : (
+          <div className="baseball-waiting-turn-indicator">
+            <div>
+              <Spin />
+            </div>
+            <div>상대방의 차례입니다.</div>
+          </div>
+        )}
+        <div className="number-top-button-wrapper">
+          <Button
+            className="number-backspace-button"
+            size="large"
+            disabled={!isMyTurn}
+            onClick={handleRemoveNumber}
+          >
+            <ArrowBackIcon />
+          </Button>
+          <Button
+            className="number-backspace-button"
+            size="large"
+            disabled={!isMyTurn}
+            onClick={handleSetRandomNumber}
+          >
+            랜덤숫자
+          </Button>
+          <Button
+            className="number-register-button"
+            size="large"
+            disabled={!isMyTurn}
+            onClick={() => handleRegisterNumber(number)}
+          >
+            입력하기
+          </Button>
+        </div>
         <div className="number-button-wrapper">
           {Array.from({ length: 5 }, (_, index) => String(index)).map(
-            (number) => (
+            (value) => (
               <Button
                 size="large"
                 type="primary"
-                key={number}
-                disabled={!isMyTurn}
-                onClick={() => onClickNumberButton(number)}
+                key={value}
+                disabled={!isMyTurn || number.includes(value)}
+                onClick={() => onClickNumberButton(value)}
               >
-                {number}
+                {value}
               </Button>
             )
           )}
         </div>
         <div className="number-button-wrapper">
           {Array.from({ length: 5 }, (_, index) => String(index + 5)).map(
-            (number) => (
+            (value) => (
               <Button
                 size="large"
                 type="primary"
-                key={number}
-                disabled={!isMyTurn}
-                onClick={() => onClickNumberButton(number)}
+                key={value}
+                disabled={!isMyTurn || number.includes(value)}
+                onClick={() => onClickNumberButton(value)}
               >
-                {number}
+                {value}
               </Button>
             )
           )}
         </div>
       </div>
-
       <NumberRegistrationModal
         open={!isGameStart}
         closeIcon={false}
