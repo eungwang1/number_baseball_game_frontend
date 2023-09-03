@@ -152,6 +152,7 @@ const BaseBallComponent: React.FC<BaseBallComponentProps> = ({
   const [isConnected, setIsConnected] = useState<boolean>(false);
   const [isGameStart, setIsGameStart] = useState<boolean>(false);
   const [isMyTurn, setIsMyTurn] = useState<boolean>(true);
+  const [isRegisterNumber, setIsRegisterNumber] = useState<boolean>(false);
 
   const { time, isTimerActive, pauseTime, resetTime, startTime } =
     useTimer(turnTimeLimit);
@@ -168,7 +169,7 @@ const BaseBallComponent: React.FC<BaseBallComponentProps> = ({
   const onClickNumberButton = (value: string) => {
     if (number.length >= 4) return;
     const isUnique = !number.includes(value);
-    if (!isUnique) return message.error("중복된 숫자는 입력할 수 없습니다.");
+    if (!isUnique) return;
     setNumber((prev) => prev + value);
   };
   const handleRemoveNumber = () => {
@@ -176,6 +177,7 @@ const BaseBallComponent: React.FC<BaseBallComponentProps> = ({
   };
   const handleRegisterNumber = (baseballNumber: string) => {
     if (!socket) return message.error("연결 상태를 확인해주세요.");
+    if (isRegisterNumber) return;
     if (baseballNumber.length !== 4)
       return message.error("4자리 숫자를 입력해주세요.");
     const baseballNumberArray = baseballNumber.split("");
@@ -267,6 +269,9 @@ const BaseBallComponent: React.FC<BaseBallComponentProps> = ({
           setOpponentGuessResults((prev) => [data, ...prev]);
         }
       );
+      socket.on(BASEBALL_GAME_SUBSCRIBE_EVENTS.MY_BALL_REGISTERED, () => {
+        setIsRegisterNumber(true);
+      });
     }
 
     return () => {
@@ -277,6 +282,7 @@ const BaseBallComponent: React.FC<BaseBallComponentProps> = ({
         socket.off(BASEBALL_GAME_SUBSCRIBE_EVENTS.CHANGE_TURN);
         socket.off(BASEBALL_GAME_SUBSCRIBE_EVENTS.GUESS_RESULT);
         socket.off(BASEBALL_GAME_SUBSCRIBE_EVENTS.OPPONENT_GUESS_RESULT);
+        socket.off(BASEBALL_GAME_SUBSCRIBE_EVENTS.MY_BALL_REGISTERED);
       }
     };
   }, [socket]);
@@ -352,7 +358,7 @@ const BaseBallComponent: React.FC<BaseBallComponentProps> = ({
           <Button
             className="number-backspace-button"
             size="large"
-            disabled={!isMyTurn}
+            disabled={!isMyTurn || isRegisterNumber}
             onClick={handleRemoveNumber}
           >
             <ArrowBackIcon />
@@ -360,7 +366,7 @@ const BaseBallComponent: React.FC<BaseBallComponentProps> = ({
           <Button
             className="number-backspace-button"
             size="large"
-            disabled={!isMyTurn}
+            disabled={!isMyTurn || isRegisterNumber}
             onClick={handleSetRandomNumber}
           >
             랜덤숫자
@@ -368,7 +374,7 @@ const BaseBallComponent: React.FC<BaseBallComponentProps> = ({
           <Button
             className="number-register-button"
             size="large"
-            disabled={!isMyTurn}
+            disabled={!isMyTurn || isRegisterNumber}
             onClick={() => handleRegisterNumber(number)}
           >
             입력하기
@@ -381,7 +387,9 @@ const BaseBallComponent: React.FC<BaseBallComponentProps> = ({
                 size="large"
                 type="primary"
                 key={value}
-                disabled={!isMyTurn || number.includes(value)}
+                disabled={
+                  !isMyTurn || number.includes(value) || isRegisterNumber
+                }
                 onClick={() => onClickNumberButton(value)}
               >
                 {value}
@@ -396,7 +404,9 @@ const BaseBallComponent: React.FC<BaseBallComponentProps> = ({
                 size="large"
                 type="primary"
                 key={value}
-                disabled={!isMyTurn || number.includes(value)}
+                disabled={
+                  !isMyTurn || number.includes(value) || isRegisterNumber
+                }
                 onClick={() => onClickNumberButton(value)}
               >
                 {value}
@@ -412,6 +422,7 @@ const BaseBallComponent: React.FC<BaseBallComponentProps> = ({
         socket={socket}
         number={number}
         setNumber={setNumber}
+        isRegisterNumber={isRegisterNumber}
       />
     </BaseBallComponentBlock>
   );

@@ -1,7 +1,7 @@
 "use client";
 
 import useSocket from "@/libs/hooks/useSocket";
-import { Dialog, colors } from "@mui/material";
+import { colors } from "@mui/material";
 import { useRouter } from "next/navigation";
 import React, { useEffect, useState } from "react";
 import styled from "styled-components";
