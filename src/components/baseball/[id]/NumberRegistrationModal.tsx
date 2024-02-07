@@ -44,17 +44,18 @@ interface NumberRegistrationModalProps extends ModalProps {
   socket: Socket | null;
   number: string;
   setNumber: React.Dispatch<React.SetStateAction<string>>;
+  isRegisterNumber: boolean;
 }
 
 const NumberRegistrationModal: React.FC<NumberRegistrationModalProps> = (
   props
 ) => {
-  const { number, socket, setNumber, ...modalProps } = props;
-  const [isRegisterNumber, setIsRegisterNumber] = useState<boolean>(false);
+  const { number, socket, setNumber, isRegisterNumber, ...modalProps } = props;
 
   const handleRegisterNumber = (e: FormEvent) => {
     e.preventDefault();
     if (!socket) message.error("연결 상태를 확인해주세요.");
+    if (isRegisterNumber) return;
     if (number.length !== 4) return message.error("4자리 숫자를 입력해주세요.");
     const baseballNumberArray = number.split("");
     const isNumber = baseballNumberArray.every((n) => !isNaN(parseInt(n)));
@@ -67,12 +68,6 @@ const NumberRegistrationModal: React.FC<NumberRegistrationModalProps> = (
     setNumber("");
   };
 
-  useEffect(() => {
-    if (!socket) return;
-    socket.on(BASEBALL_GAME_SUBSCRIBE_EVENTS.MY_BALL_REGISTERED, () => {
-      setIsRegisterNumber(true);
-    });
-  }, [socket]);
   return (
     <NumberRegistrationModalBlock {...modalProps}>
       {isRegisterNumber ? (
